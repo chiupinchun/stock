@@ -5,11 +5,13 @@ const stockModel = require('../model/stock')
 
 /* GET home page. */
 router.get('/', async (req, res) => {
-  const crawl = new Crawler({
+  const crawl = await new Crawler().fetch({
     url: 'https://tw.stock.yahoo.com/quote/4946.TWO'
   })
-  const data = await crawl.fetch()
-  res.send({ data })
+  const price = crawl.search('#main-0-QuoteHeader-Proxy .D(f).Jc(sb).Ai(fe) span')
+  res.send({
+    price
+  })
 })
 
 module.exports = router

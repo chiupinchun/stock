@@ -1,6 +1,7 @@
 const url = require('url')
 const http = require('http')
 const https = require('https')
+const { toAst, parseSelector, searchNode, isNode } = require('./htmlTools')
 
 const parseProtocol = (protocol) => {
   switch (protocol) {
@@ -15,10 +16,9 @@ const parseProtocol = (protocol) => {
 
 module.exports = class Crawler {
   options
-  constructor(opt) {
+  html
+  fetch(opt) {
     this.options = opt
-  }
-  fetch() {
     return new Promise((resolve) => {
       const urlObj = url.parse(this.options.url)
       const { request } = parseProtocol(urlObj.protocol)
@@ -33,13 +33,23 @@ module.exports = class Crawler {
           let chunks = []
           res.on('data', (chunk) => void chunks.push(chunk))
           res.on('end', () => {
-            const result = Buffer.concat(chunks).toString('utf-8')
-            resolve(result)
+            this.html = toAst(Buffer.concat(chunks).toString('utf-8'))
+            resolve(this)
           })
         }
       )
 
       req.end()
     })
+  }
+  search(selector) {
+    const selectors = parseSelector(selector)
+    let node = this.html
+    selectors.forEach((select) => {
+      if (isNode(node)) {
+        node = searchNode(node, select)
+      }
+    })
+    return Array.isArray(node?.childNodes) ? node.childNodes.reduce((res, item) => res + (item.value ?? 'object'), '') : null
   }
 }
