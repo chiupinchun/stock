@@ -50,6 +50,6 @@ module.exports = class Crawler {
         node = searchNode(node, select)
       }
     })
-    return Array.isArray(node?.childNodes) ? node.childNodes.reduce((res, item) => res + (item.value ?? 'object'), '') : null
+    return Array.isArray(node?.childNodes) ? node.childNodes.reduce((res, item) => res + (item.value ?? ''), '') : null
   }
 }

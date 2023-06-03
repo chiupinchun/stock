@@ -15,8 +15,8 @@ const toAst = (htmlStr) => {
  * @param {string} selector
  * @returns ({
  *  tag?: string,
- *  class: string,
- *  id: string
+ *  class: string[],
+ *  id: string[]
  * })
  */
 const parseSelector = (selector) => {
@@ -45,8 +45,6 @@ const parseSelector = (selector) => {
             condition.tag = item
         }
       })
-      condition.class = condition.class.join(' ')
-      condition.id = condition.id.join(' ')
       res.push(condition)
     }
     return res
@@ -58,8 +56,11 @@ const checkNode = (node, condition) => {
   if (condition.tag && node.nodeName !== condition.tag) return false
   if ((condition.class || condition.id) && !node.attrs) return false
 
-  if (condition.class && condition.class !== node.attrs.find((attr) => attr.name === 'class')?.value) return false
-  if (condition.id && condition.id !== node.attrs.find((attr) => attr.name === 'id')?.value) return false
+  const nodeClass = node.attrs.find((attr) => attr.name === 'class')?.value
+  const nodeId = node.attrs.find((attr) => attr.name === 'id')?.value
+
+  if (condition.class.length && condition.class.some((item) => !nodeClass?.includes(item))) return false
+  if (condition.id.length && condition.id.some((item) => !nodeId?.includes(item))) return false
 
   return true
 }
@@ -72,7 +73,6 @@ const searchNode = (targetNode, condition) => {
     if (node.childNodes?.length) node.childNodes.forEach((child) => deepSearch(child))
   }
   deepSearch(targetNode)
-  console.log(result)
   return result ?? null
 }
 
